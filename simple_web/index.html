@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Resume | Alex Taylor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="page-shell">
+    <section class="hero-panel">
+      <div class="hero-content">
+        <p class="eyebrow">Student Resume</p>
+        <h1>Alex Taylor</h1>
+        <p class="hero-copy">Aspiring software engineer with a passion for modern web experiences and accessible design. Seeking internships that blend creativity, collaboration, and code.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#contact">Contact Me</a>
+          <a class="btn btn-secondary" href="#projects">Portfolio</a>
+        </div>
+      </div>
+      <div class="hero-card">
+        <div class="profile-card">
+          <div class="profile-top">
+            <div class="avatar">AT</div>
+            <div>
+              <p class="profile-name">Alex Taylor</p>
+              <p class="profile-role">Computer Science Student</p>
+            </div>
+          </div>
+          <div class="profile-stats">
+            <div>
+              <p>3.9</p>
+              <span>GPA</span>
+            </div>
+            <div>
+              <p>5+</p>
+              <span>Projects</span>
+            </div>
+            <div>
+              <p>2</p>
+              <span>Internships</span>
+            </div>
+          </div>
+          <div class="profile-bio">
+            <p>Focused on building polished web applications with performance, responsive design, and strong collaboration skills.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="section-panel">
+      <div class="section-header">
+        <p class="section-label">About</p>
+        <h2>Who I Am</h2>
+      </div>
+      <div class="grid-two">
+        <div>
+          <p>I’m a junior studying Computer Science at Riverside University, where I specialize in front-end development, UX-focused design, and building intuitive web applications.</p>
+          <ul class="feature-list">
+            <li>Modern web interface design using HTML, CSS, and JavaScript</li>
+            <li>Experience with responsive layouts, accessibility, and visual storytelling</li>
+            <li>Collaborative team work for hackathons and open-source contributions</li>
+          </ul>
+        </div>
+        <div class="stats-grid">
+          <article>
+            <h3>Web Development</h3>
+            <p>React, Vanilla JS, CSS modules, animations</p>
+          </article>
+          <article>
+            <h3>Design Systems</h3>
+            <p>Figma workflows, accessible UI, brand identity</p>
+          </article>
+          <article>
+            <h3>Performance</h3>
+            <p>Fast loading, semantic markup, clean structure</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="experience" class="section-panel section-alt">
+      <div class="section-header">
+        <p class="section-label">Experience</p>
+        <h2>Recent Roles</h2>
+      </div>
+      <div class="timeline">
+        <article class="timeline-item">
+          <div class="timeline-marker"></div>
+          <div>
+            <h3>Frontend Intern</h3>
+            <p class="meta">GreenSpark Labs • Summer 2025</p>
+            <p>Built interactive campus portal features, optimized mobile workflows, and improved accessibility across 15 pages.</p>
+          </div>
+        </article>
+        <article class="timeline-item">
+          <div class="timeline-marker"></div>
+          <div>
+            <h3>UX Design Assistant</h3>
+            <p class="meta">Riverside Student Union • 2024–2025</p>
+            <p>Designed user flows and prototypes for campus event platforms, improving usability and student engagement.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="projects" class="section-panel">
+      <div class="section-header">
+        <p class="section-label">Projects</p>
+        <h2>Selected Work</h2>
+      </div>
+      <div class="projects-grid">
+        <article class="project-card">
+          <span class="project-tag">Web App</span>
+          <h3>StudyBuddy</h3>
+          <p>Collaborative study planning app with schedule creation, note sharing, and progress tracking.</p>
+        </article>
+        <article class="project-card">
+          <span class="project-tag">Portfolio</span>
+          <h3>Design+Code Showcase</h3>
+          <p>Responsive portfolio site built with modern CSS layout, animated interactions, and project highlights.</p>
+        </article>
+        <article class="project-card">
+          <span class="project-tag">Hackathon</span>
+          <h3>Campus GreenMap</h3>
+          <p>Interactive map app showing sustainable campus amenities and event hotspots for students.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="skills" class="section-panel section-alt">
+      <div class="section-header">
+        <p class="section-label">Skills</p>
+        <h2>What I Bring</h2>
+      </div>
+      <div class="skills-bar">
+        <div><span>HTML & CSS</span><div class="bar"><div class="fill" style="width: 95%"></div></div></div>
+        <div><span>JavaScript</span><div class="bar"><div class="fill" style="width: 88%"></div></div></div>
+        <div><span>React</span><div class="bar"><div class="fill" style="width: 80%"></div></div></div>
+        <div><span>Design</span><div class="bar"><div class="fill" style="width: 85%"></div></div></div>
+      </div>
+    </section>
+
+    <section id="contact" class="section-panel">
+      <div class="section-header">
+        <p class="section-label">Contact</p>
+        <h2>Let’s Connect</h2>
+      </div>
+      <div class="contact-shell">
+        <form id="contact-form" class="contact-form">
+          <label for="name">Name</label>
+          <input id="name" name="name" type="text" placeholder="Your name" required />
+
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" placeholder="you@example.com" required />
+
+          <label for="message">Message</label>
+          <textarea id="message" name="message" rows="5" placeholder="What would you like to build?" required></textarea>
+
+          <button type="submit" class="btn btn-primary">Send Message</button>
+          <p id="form-status" class="form-status" aria-live="polite"></p>
+        </form>
+        <div class="contact-info">
+          <div>
+            <h3>Contact details</h3>
+            <p>Email: alex.taylor@example.com</p>
+            <p>Phone: (555) 123-8932</p>
+          </div>
+          <div>
+            <h3>Available for</h3>
+            <p>Internships, freelance web projects, campus collaborations.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
