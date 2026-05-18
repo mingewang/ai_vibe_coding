@@ -1,3 +1,25 @@
+const themeToggle = document.getElementById('theme-toggle');
+const html = document.documentElement;
+
+function getPreferredTheme() {
+  const stored = localStorage.getItem('theme');
+  if (stored === 'light' || stored === 'dark') return stored;
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
+function setTheme(theme) {
+  html.setAttribute('data-theme', theme);
+  themeToggle.textContent = theme === 'dark' ? 'Light' : 'Dark';
+  localStorage.setItem('theme', theme);
+}
+
+setTheme(getPreferredTheme());
+
+themeToggle.addEventListener('click', () => {
+  const current = html.getAttribute('data-theme');
+  setTheme(current === 'dark' ? 'light' : 'dark');
+});
+
 const form = document.getElementById('contact-form');
 const status = document.getElementById('form-status');
 
