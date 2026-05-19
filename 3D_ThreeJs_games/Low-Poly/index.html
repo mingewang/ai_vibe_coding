@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Low-Poly Exploration</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { overflow: hidden; background: #000; font-family: 'Segoe UI', Arial, sans-serif; }
+canvas { display: block; }
+
+#blocker {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10; cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+#instructions {
+  text-align: center; color: #fff;
+  user-select: none;
+}
+#instructions h1 {
+  font-size: 3em; font-weight: 300; letter-spacing: 0.05em;
+  margin-bottom: 0.3em; text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+}
+#instructions .sub {
+  font-size: 1.1em; opacity: 0.8; margin-bottom: 1.5em;
+}
+#instructions .keys {
+  display: inline-flex; gap: 0.6em; align-items: center;
+  font-size: 0.9em; opacity: 0.6;
+}
+#instructions .keys kbd {
+  background: rgba(255,255,255,0.15); padding: 0.2em 0.6em;
+  border-radius: 4px; font-family: inherit; border: 1px solid rgba(255,255,255,0.2);
+}
+#instructions .click-msg {
+  margin-top: 2em; font-size: 1.2em;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+#hud {
+  position: fixed; inset: 0; pointer-events: none; z-index: 5;
+}
+#crosshair {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  color: rgba(255,255,255,0.5); font-size: 1.8em;
+  font-family: 'Courier New', monospace;
+}
+#orb-counter {
+  position: absolute; top: 20px; right: 24px;
+  color: rgba(255,255,255,0.7); font-size: 1em;
+  font-family: 'Segoe UI', Arial, sans-serif; letter-spacing: 0.05em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+#orb-counter span { color: #88ddff; }
+</style>
+</head>
+<body>
+
+<div id="blocker">
+  <div id="instructions">
+    <h1>Low-Poly Exploration</h1>
+    <div class="sub">Explore the low-poly wilderness &amp; collect the crystals</div>
+    <div class="keys">
+      <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <span>move</span>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      <kbd>Mouse</kbd> <span>look</span>
+    </div>
+    <div class="click-msg">Click to explore</div>
+  </div>
+</div>
+
+<div id="hud">
+  <div id="crosshair">+</div>
+  <div id="orb-counter">Crystals: <span id="count-display">0</span> / <span id="total-display">0</span></div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+const blocker = document.getElementById('blocker');
+const countDisplay = document.getElementById('count-display');
+const totalDisplay = document.getElementById('total-display');
+
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 300);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+document.body.prepend(renderer.domElement);
+
+const WORLD_SIZE = 120;
+const FOV = 70;
+const PLAYER_HEIGHT = 1.6;
+const MOVE_SPEED = 8;
+const COLLECT_DIST = 2;
+
+let yaw = 0;
+let pitch = 0;
+const keys = { w: false, a: false, s: false, d: false };
+let isLocked = false;
+let collected = 0;
+let totalOrbs = 0;
+const obstacles = [];
+const orbs = [];
+
+function createSkyTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 2;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 512);
+  grad.addColorStop(0.0, '#1a1a3e');
+  grad.addColorStop(0.15, '#3a6ea5');
+  grad.addColorStop(0.35, '#6ba3d6');
+  grad.addColorStop(0.55, '#9ec8e0');
+  grad.addColorStop(0.75, '#c9dccc');
+  grad.addColorStop(1.0, '#d4c9a8');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 2, 512);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  return tex;
+}
+scene.background = createSkyTexture();
+scene.fog = new THREE.Fog(0x8eb8d6, 60, 160);
+
+const ambient = new THREE.AmbientLight(0x667799, 0.5);
+scene.add(ambient);
+
+const sun = new THREE.DirectionalLight(0xffeedd, 1.8);
+sun.position.set(40, 60, 30);
+sun.castShadow = true;
+sun.shadow.mapSize.width = 2048;
+sun.shadow.mapSize.height = 2048;
+sun.shadow.camera.near = 0.5;
+sun.shadow.camera.far = 150;
+sun.shadow.camera.left = -80;
+sun.shadow.camera.right = 80;
+sun.shadow.camera.top = 80;
+sun.shadow.camera.bottom = -80;
+scene.add(sun);
+
+const hemi = new THREE.HemisphereLight(0x88ccff, 0x444422, 0.4);
+scene.add(hemi);
+
+function terrainHeight(x, z) {
+  return Math.sin(x * 0.025 + z * 0.015) * 0.6
+       + Math.sin(x * 0.05 - z * 0.04) * 0.3
+       + Math.cos(x * 0.08 + z * 0.07) * 0.15;
+}
+
+const groundGeo = new THREE.PlaneGeometry(WORLD_SIZE, WORLD_SIZE, 60, 60);
+groundGeo.rotateX(-Math.PI / 2);
+const pos = groundGeo.attributes.position;
+for (let i = 0; i < pos.count; i++) {
+  const x = pos.getX(i);
+  const z = pos.getZ(i);
+  const h = terrainHeight(x, z);
+  pos.setY(i, h);
+}
+pos.needsUpdate = true;
+groundGeo.computeVertexNormals();
+
+const groundMat = new THREE.MeshStandardMaterial({
+  color: 0x7cb342,
+  roughness: 0.95,
+  metalness: 0.0,
+  flatShading: true,
+});
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.receiveShadow = true;
+scene.add(ground);
+
+function createTree(x, z, scale) {
+  const s = scale || 0.7 + Math.random() * 0.6;
+  const h = terrainHeight(x, z);
+  const group = new THREE.Group();
+
+  const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8d6e63, roughness: 0.9, flatShading: true });
+  const foliageMat = new THREE.MeshStandardMaterial({
+    color: new THREE.Color().setHSL(0.28 + Math.random() * 0.06, 0.55, 0.32 + Math.random() * 0.15),
+    roughness: 0.8, flatShading: true,
+  });
+
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2 * s, 0.35 * s, 1.8 * s, 5), trunkMat);
+  trunk.position.y = 0.9 * s;
+  trunk.castShadow = true;
+  group.add(trunk);
+
+  const f1 = new THREE.Mesh(new THREE.ConeGeometry(1.6 * s, 2.2 * s, 6), foliageMat);
+  f1.position.y = 1.8 * s + 0.8 * s;
+  f1.castShadow = true;
+  group.add(f1);
+
+  const f2 = new THREE.Mesh(new THREE.ConeGeometry(1.2 * s, 1.6 * s, 6), foliageMat);
+  f2.position.y = 3.0 * s + 0.8 * s;
+  f2.castShadow = true;
+  group.add(f2);
+
+  group.position.set(x, h, z);
+  const rot = Math.random() * Math.PI * 2;
+  group.rotation.y = rot;
+  scene.add(group);
+  obstacles.push({ x, z, r: 1.2 * s });
+  return group;
+}
+
+function createRock(x, z, scale) {
+  const s = scale || 0.4 + Math.random() * 0.7;
+  const h = terrainHeight(x, z);
+  const rockMat = new THREE.MeshStandardMaterial({
+    color: new THREE.Color().setHSL(0.08, 0.06, 0.35 + Math.random() * 0.35),
+    roughness: 0.9, flatShading: true,
+  });
+  const rock = new THREE.Mesh(new THREE.IcosahedronGeometry(s, 1), rockMat);
+  rock.position.set(x, h + s * 0.2, z);
+  rock.rotation.set(Math.random() * Math.PI * 2, Math.random() * Math.PI * 2, Math.random() * Math.PI * 2);
+  rock.scale.y = 0.5 + Math.random() * 0.5;
+  rock.castShadow = true;
+  rock.receiveShadow = true;
+  scene.add(rock);
+  obstacles.push({ x, z, r: s * 0.8 });
+  return rock;
+}
+
+function createOrb(x, z) {
+  const h = terrainHeight(x, z) + 1.2;
+  const color = new THREE.Color().setHSL(0.55 + Math.random() * 0.2, 0.9, 0.6);
+  const mat = new THREE.MeshStandardMaterial({
+    color, emissive: color, emissiveIntensity: 0.6,
+    roughness: 0.2, metalness: 0.1,
+  });
+  const orb = new THREE.Mesh(new THREE.OctahedronGeometry(0.5, 0), mat);
+  orb.position.set(x, h, z);
+  orb.castShadow = true;
+  scene.add(orb);
+
+  const glowMat = new THREE.MeshBasicMaterial({
+    color, transparent: true, opacity: 0.15, side: THREE.BackSide,
+  });
+  const glow = new THREE.Mesh(new THREE.OctahedronGeometry(0.9, 0), glowMat);
+  glow.position.copy(orb.position);
+  scene.add(glow);
+
+  const data = { mesh: orb, glow, x, z, baseY: h, collected: false, phase: Math.random() * Math.PI * 2 };
+  orbs.push(data);
+  totalOrbs++;
+  return data;
+}
+
+function scatter(count, spawnFn) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const radius = 6 + Math.random() * (WORLD_SIZE / 2 - 8);
+    const x = Math.cos(angle) * radius;
+    const z = Math.sin(angle) * radius;
+    spawnFn(x, z);
+  }
+}
+
+scatter(100, (x, z) => {
+  if (Math.random() < 0.65) createTree(x, z);
+  else createRock(x, z);
+});
+
+for (let i = 0; i < 12; i++) {
+  let x, z, valid;
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const angle = Math.random() * Math.PI * 2;
+    const radius = 8 + Math.random() * (WORLD_SIZE / 2 - 10);
+    x = Math.cos(angle) * radius;
+    z = Math.sin(angle) * radius;
+    valid = true;
+    for (const o of obstacles) {
+      const dx = x - o.x;
+      const dz = z - o.z;
+      if (Math.sqrt(dx * dx + dz * dz) < o.r + 2.5) { valid = false; break; }
+    }
+    if (valid) break;
+  }
+  if (valid) createOrb(x, z);
+}
+
+totalDisplay.textContent = totalOrbs;
+
+function createBounds() {
+  const wallMat = new THREE.MeshStandardMaterial({
+    color: 0x5d4037, roughness: 0.9, flatShading: true, transparent: true, opacity: 0.3,
+  });
+  const half = WORLD_SIZE / 2;
+  const wallGeo = new THREE.BoxGeometry(WORLD_SIZE, 2, 0.5);
+  for (const [px, pz, ry] of [[0, -half, 0], [0, half, 0], [-half, 0, Math.PI / 2], [half, 0, Math.PI / 2]]) {
+    const wall = new THREE.Mesh(wallGeo, wallMat);
+    wall.position.set(px, 1, pz);
+    wall.rotation.y = ry;
+    scene.add(wall);
+  }
+}
+createBounds();
+
+camera.position.set(0, PLAYER_HEIGHT, 0);
+camera.rotation.order = 'YXZ';
+
+function checkCollision(nx, nz) {
+  const margin = 0.8;
+  for (const o of obstacles) {
+    const dx = nx - o.x;
+    const dz = nz - o.z;
+    if (dx * dx + dz * dz < (o.r + margin) * (o.r + margin)) return true;
+  }
+  return false;
+}
+
+function constrain(pos, min, max) {
+  return Math.max(min, Math.min(max, pos));
+}
+
+function updatePlayer(dt) {
+  if (!isLocked) return;
+  const forward = new THREE.Vector3(0, 0, -1);
+  const right = new THREE.Vector3(1, 0, 0);
+  forward.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+  right.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+
+  let moveX = 0, moveZ = 0;
+  if (keys.w) { moveX += forward.x; moveZ += forward.z; }
+  if (keys.s) { moveX -= forward.x; moveZ -= forward.z; }
+  if (keys.a) { moveX -= right.x; moveZ -= right.z; }
+  if (keys.d) { moveX += right.x; moveZ += right.z; }
+
+  const len = Math.sqrt(moveX * moveX + moveZ * moveZ);
+  if (len > 0) {
+    moveX /= len;
+    moveZ /= len;
+    const speed = MOVE_SPEED * dt;
+    const nx = camera.position.x + moveX * speed;
+    const nz = camera.position.z + moveZ * speed;
+    if (!checkCollision(nx, nz)) {
+      camera.position.x = nx;
+      camera.position.z = nz;
+    } else {
+      if (!checkCollision(camera.position.x + moveX * speed, camera.position.z)) {
+        camera.position.x += moveX * speed;
+      }
+      if (!checkCollision(camera.position.x, camera.position.z + moveZ * speed)) {
+        camera.position.z += moveZ * speed;
+      }
+    }
+  }
+
+  const half = WORLD_SIZE / 2 - 1;
+  camera.position.x = constrain(camera.position.x, -half, half);
+  camera.position.z = constrain(camera.position.z, -half, half);
+  camera.position.y = PLAYER_HEIGHT + terrainHeight(camera.position.x, camera.position.z);
+}
+
+function collectOrbs() {
+  const px = camera.position.x;
+  const pz = camera.position.z;
+  for (const orb of orbs) {
+    if (orb.collected) continue;
+    const dx = px - orb.x;
+    const dz = pz - orb.z;
+    if (dx * dx + dz * dz < COLLECT_DIST * COLLECT_DIST) {
+      orb.collected = true;
+      collected++;
+      countDisplay.textContent = collected;
+      orb.mesh.visible = false;
+      orb.glow.visible = false;
+    }
+  }
+}
+
+function onMouseMove(e) {
+  if (!isLocked) return;
+  const sensitivity = 0.002;
+  yaw -= e.movementX * sensitivity;
+  pitch -= e.movementY * sensitivity;
+  pitch = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, pitch));
+  camera.rotation.order = 'YXZ';
+  camera.rotation.y = yaw;
+  camera.rotation.x = pitch;
+}
+
+function onKeyDown(e) {
+  const key = e.key.toLowerCase();
+  if (key === 'w' || key === 'a' || key === 's' || key === 'd') {
+    keys[key] = true;
+    e.preventDefault();
+  }
+}
+function onKeyUp(e) {
+  const key = e.key.toLowerCase();
+  if (key === 'w' || key === 'a' || key === 's' || key === 'd') {
+    keys[key] = false;
+    e.preventDefault();
+  }
+}
+
+function onPointerLockChange() {
+  isLocked = document.pointerLockElement === renderer.domElement;
+  blocker.style.display = isLocked ? 'none' : 'flex';
+}
+
+blocker.addEventListener('click', () => {
+  renderer.domElement.requestPointerLock();
+});
+
+document.addEventListener('pointerlockchange', onPointerLockChange);
+document.addEventListener('mousemove', onMouseMove);
+document.addEventListener('keydown', onKeyDown);
+document.addEventListener('keyup', onKeyUp);
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+let prevTime = performance.now();
+
+function animate(time) {
+  requestAnimationFrame(animate);
+  const dt = Math.min((time - prevTime) / 1000, 0.05);
+  prevTime = time;
+
+  updatePlayer(dt);
+  collectOrbs();
+
+  for (const orb of orbs) {
+    if (orb.collected) continue;
+    const bob = Math.sin(time * 0.002 + orb.phase) * 0.3;
+    orb.mesh.position.y = orb.baseY + bob;
+    orb.mesh.rotation.x += dt * 1.5;
+    orb.mesh.rotation.y += dt * 2;
+    orb.glow.position.y = orb.baseY + bob;
+    orb.glow.rotation.x += dt * 0.8;
+    orb.glow.rotation.y += dt * 1.2;
+    orb.glow.material.opacity = 0.1 + Math.sin(time * 0.003 + orb.phase) * 0.05;
+  }
+
+  renderer.render(scene, camera);
+}
+
+animate(performance.now());
+</script>
+</body>
+</html>
