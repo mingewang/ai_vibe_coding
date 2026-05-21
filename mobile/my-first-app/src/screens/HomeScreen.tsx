@@ -15,9 +15,9 @@ export default function HomeScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   const quickStats = [
-    { label: 'Pending', value: 4, color: theme.primary, icon: 'time-outline' },
-    { label: 'Completed', value: 12, color: '#34D399', icon: 'checkmark-circle-outline' },
-    { label: 'Overdue', value: 1, color: '#F87171', icon: 'alert-circle-outline' },
+    { label: 'Pending', value: 4, color: theme.primary, icon: 'time-outline' as const },
+    { label: 'Completed', value: 12, color: '#34D399', icon: 'checkmark-circle-outline' as const },
+    { label: 'Overdue', value: 1, color: '#F87171', icon: 'alert-circle-outline' as const },
   ];
 
   return (

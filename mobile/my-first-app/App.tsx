@@ -1,17 +1,22 @@
 import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme, Theme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import HomeScreen from './src/screens/HomeScreen';
 import HomeworkScreen from './src/screens/HomeworkScreen';
 
-const Tab = createBottomTabNavigator();
+type TabParamList = {
+  Home: undefined;
+  Homework: undefined;
+};
+
+const Tab = createBottomTabNavigator<TabParamList>();
 
 function AppNavigator() {
   const { theme, isDark } = useTheme();
 
-  const navTheme = {
+  const navTheme: Theme = {
     ...(isDark ? DarkTheme : DefaultTheme),
     colors: {
       ...(isDark ? DarkTheme.colors : DefaultTheme.colors),
@@ -29,10 +34,10 @@ function AppNavigator() {
       <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarIcon: ({ focused, color, size }) => {
-            let iconName;
+            let iconName: keyof typeof Ionicons.glyphMap;
             if (route.name === 'Home') {
               iconName = focused ? 'home' : 'home-outline';
-            } else if (route.name === 'Homework') {
+            } else {
               iconName = focused ? 'book' : 'book-outline';
             }
             return <Ionicons name={iconName} size={size} color={color} />;

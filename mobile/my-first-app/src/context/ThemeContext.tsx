@@ -1,7 +1,30 @@
-import { createContext, useContext, useState, useMemo } from 'react';
+import { createContext, useContext, useState, useMemo, ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
 
-const lightTheme = {
+type Theme = {
+  background: string;
+  surface: string;
+  primary: string;
+  primaryLight: string;
+  text: string;
+  textSecondary: string;
+  accent: string;
+  border: string;
+  tabBar: string;
+  tabBarBorder: string;
+  cardShadow: string;
+  inputBackground: string;
+  statusBar: 'dark' | 'light';
+  headerTint: string;
+};
+
+type ThemeContextType = {
+  isDark: boolean;
+  theme: Theme;
+  toggleTheme: () => void;
+};
+
+const lightTheme: Theme = {
   background: '#F2F3F7',
   surface: '#FFFFFF',
   primary: '#6C63FF',
@@ -18,7 +41,7 @@ const lightTheme = {
   headerTint: '#1A1A2E',
 };
 
-const darkTheme = {
+const darkTheme: Theme = {
   background: '#0F0F23',
   surface: '#1A1A2E',
   primary: '#6C63FF',
@@ -35,9 +58,9 @@ const darkTheme = {
   headerTint: '#EAEAFF',
 };
 
-const ThemeContext = createContext();
+const ThemeContext = createContext<ThemeContextType | null>(null);
 
-export function ThemeProvider({ children }) {
+export function ThemeProvider({ children }: { children: ReactNode }) {
   const systemScheme = useColorScheme();
   const [isDark, setIsDark] = useState(systemScheme === 'dark');
 

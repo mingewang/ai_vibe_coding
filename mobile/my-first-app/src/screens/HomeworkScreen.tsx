@@ -12,18 +12,26 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 
-const PRIORITIES = ['Low', 'Medium', 'High'];
+type Task = {
+  id: string;
+  title: string;
+  subject: string;
+  priority: 'Low' | 'Medium' | 'High';
+  done: boolean;
+};
+
+const PRIORITIES: Task['priority'][] = ['Low', 'Medium', 'High'];
 
 export default function HomeworkScreen() {
   const { theme } = useTheme();
-  const [tasks, setTasks] = useState([
+  const [tasks, setTasks] = useState<Task[]>([
     { id: '1', title: 'Algebra Worksheet', subject: 'Math', priority: 'High', done: false },
     { id: '2', title: 'Lab Report', subject: 'Science', priority: 'Medium', done: false },
     { id: '3', title: 'Chapter 5 Reading', subject: 'History', priority: 'Low', done: true },
   ]);
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('');
-  const [priority, setPriority] = useState('Medium');
+  const [priority, setPriority] = useState<Task['priority']>('Medium');
   const [showForm, setShowForm] = useState(false);
 
   const addTask = () => {
@@ -31,7 +39,7 @@ export default function HomeworkScreen() {
       Alert.alert('Error', 'Please enter a task title');
       return;
     }
-    const newTask = {
+    const newTask: Task = {
       id: Date.now().toString(),
       title: title.trim(),
       subject: subject.trim() || 'General',
@@ -46,15 +54,15 @@ export default function HomeworkScreen() {
     Keyboard.dismiss();
   };
 
-  const toggleDone = (id) => {
+  const toggleDone = (id: string) => {
     setTasks(tasks.map(t => (t.id === id ? { ...t, done: !t.done } : t)));
   };
 
-  const deleteTask = (id) => {
+  const deleteTask = (id: string) => {
     setTasks(tasks.filter(t => t.id !== id));
   };
 
-  const priorityColor = (p) => {
+  const priorityColor = (p: Task['priority']) => {
     switch (p) {
       case 'High': return '#F87171';
       case 'Medium': return '#FBBF24';
@@ -62,7 +70,7 @@ export default function HomeworkScreen() {
     }
   };
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item }: { item: Task }) => (
     <TouchableOpacity
       style={[styles.taskCard, { backgroundColor: theme.surface, borderLeftColor: priorityColor(item.priority) }]}
       onPress={() => toggleDone(item.id)}
