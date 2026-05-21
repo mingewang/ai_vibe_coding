@@ -1,14 +1,22 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
+import { Button, Alert } from "react-native";
 
-export default function App() {
+export default function HomeScreen() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
+    <View style={{ padding: 40 }}>
+      <Text style={{ fontSize: 30 }}>
+        My First App
+      </Text>
+
+      <Button
+        title="Click Me"
+        onPress={() => Alert.alert("Hello!")}
+      />
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
