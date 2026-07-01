@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comrite AI Vibe Coding</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #0b0b1a;
+      color: #e0e0ff;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    canvas#particles {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem;
+      background: rgba(11, 11, 26, .65);
+      backdrop-filter: blur(6px);
+      border-radius: 2rem;
+      border: 1px solid rgba(255, 255, 255, .06);
+      box-shadow: 0 0 60px rgba(100, 80, 255, .15);
+    }
+
+    h1 {
+      font-size: clamp(2rem, 6vw, 4rem);
+      font-weight: 700;
+      margin-bottom: .25em;
+      background: linear-gradient(135deg, #f0e6ff, #7c6aff, #00d4ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -.02em;
+    }
+
+    #tagline {
+      font-size: clamp(.85rem, 2vw, 1.15rem);
+      color: rgba(255, 255, 255, .5);
+      margin-bottom: 2rem;
+      min-height: 1.5em;
+      font-weight: 300;
+    }
+
+    #tagline .cursor {
+      display: inline-block;
+      width: 2px;
+      margin-left: 2px;
+      background: #7c6aff;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    ul {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: .75rem;
+      padding: 0;
+    }
+
+    li {
+      position: relative;
+    }
+
+    li a {
+      display: inline-block;
+      padding: .6rem 1.4rem;
+      border-radius: 999px;
+      text-decoration: none;
+      color: #b0b0e0;
+      font-weight: 500;
+      font-size: .95rem;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .07);
+      transition: transform .25s cubic-bezier(.34,1.56,.64,1),
+                  background .3s,
+                  box-shadow .3s,
+                  color .3s;
+      cursor: pointer;
+    }
+
+    li a:hover {
+      transform: translateY(-4px) scale(1.05);
+      background: rgba(124, 106, 255, .18);
+      border-color: rgba(124, 106, 255, .35);
+      color: #fff;
+      box-shadow: 0 8px 30px rgba(124, 106, 255, .25);
+    }
+
+    #clock {
+      margin-top: 1.5rem;
+      font-size: .75rem;
+      color: rgba(255, 255, 255, .25);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: .08em;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="particles"></canvas>
+
+  <main>
+    <h1>✦ Comrite AI Vibe Coding</h1>
+    <p id="tagline"><span id="typewriter"></span><span class="cursor"></span></p>
+    <ul>
+      <li><a href="agent/" target="_blank" rel="noopener noreferrer">agent</a></li>
+      <li><a href="games/" target="_blank" rel="noopener noreferrer">games</a></li>
+      <li><a href="mobile/" target="_blank" rel="noopener noreferrer">mobile</a></li>
+      <li><a href="professional/" target="_blank" rel="noopener noreferrer">professional</a></li>
+      <li><a href="web/" target="_blank" rel="noopener noreferrer">web</a></li>
+      <li><a href="web2/" target="_blank" rel="noopener noreferrer">web2</a></li>
+    </ul>
+    <p id="clock"></p>
+  </main>
+
+  <script>
+    // ─── 1. Particle / starfield background ───────────────────────────
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let W, H, particles = [];
+
+    function resize() {
+      W = canvas.width = innerWidth;
+      H = canvas.height = innerHeight;
+    }
+    addEventListener('resize', resize);
+    resize();
+
+    const COUNT = 140;
+    for (let i = 0; i < COUNT; i++) {
+      particles.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - .5) * .4,
+        vy: (Math.random() - .5) * .4,
+        r: Math.random() * 2 + .5,
+        a: Math.random() * .6 + .2,
+      });
+    }
+
+    let mouse = { x: -999, y: -999 };
+    addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+    addEventListener('mouseleave', () => { mouse.x = -999; mouse.y = -999; });
+
+    function drawParticles() {
+      ctx.clearRect(0, 0, W, H);
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = W;
+        if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H;
+        if (p.y > H) p.y = 0;
+
+        const dx = mouse.x - p.x;
+        const dy = mouse.y - p.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 120) {
+          p.x -= dx * .02;
+          p.y -= dy * .02;
+        }
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(200, 190, 255, ${p.a})`;
+        ctx.fill();
+      }
+
+      // draw connections
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 100) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(150, 140, 255, ${(1 - dist / 100) * .2})`;
+            ctx.lineWidth = .5;
+            ctx.stroke();
+          }
+        }
+      }
+
+      requestAnimationFrame(drawParticles);
+    }
+    drawParticles();
+
+    // ─── 2. Typewriter effect ────────────────────────────────────────
+    const phrases = [
+      'build anything, instantly',
+      'prompt → production',
+      'where ideas become code',
+      'AI-native development',
+    ];
+    const el = document.getElementById('typewriter');
+    let phraseIdx = 0, charIdx = 0, isDeleting = false;
+
+    function typeLoop() {
+      const current = phrases[phraseIdx];
+      if (!isDeleting) {
+        el.textContent = current.slice(0, ++charIdx);
+        if (charIdx === current.length) {
+          setTimeout(() => { isDeleting = true; typeLoop(); }, 2000);
+          return;
+        }
+      } else {
+        el.textContent = current.slice(0, --charIdx);
+        if (charIdx === 0) {
+          isDeleting = false;
+          phraseIdx = (phraseIdx + 1) % phrases.length;
+        }
+      }
+      const speed = isDeleting ? 40 : 80;
+      setTimeout(typeLoop, speed + Math.random() * 30);
+    }
+    typeLoop();
+
+    // ─── 3. Live clock ───────────────────────────────────────────────
+    const clockEl = document.getElementById('clock');
+    function tick() {
+      const d = new Date();
+      clockEl.textContent = d.toLocaleTimeString('en-SG', { hour12: false }) +
+        ' · ' + d.toLocaleDateString('en-SG', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+    }
+    tick();
+    setInterval(tick, 1000);
+  </script>
+</body>
+</html>
