@@ -39,8 +39,8 @@ jobs:
 
       - name: Prepare GitHub Pages content
         run: |
-          mkdir -p public-site/withsupabase
-          cp -R web/withsupabase/dist/* public-site/withsupabase/
+          mkdir -p public-site/web/withsupabase
+          cp -R web/withsupabase/dist/* public-site/web/withsupabase/
           cp index.html public-site/index.html
           mkdir -p public-site/agent public-site/games public-site/mobile public-site/professional public-site/web public-site/web2
 
