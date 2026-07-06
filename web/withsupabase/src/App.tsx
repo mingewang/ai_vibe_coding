@@ -18,6 +18,7 @@ export default function App() {
   const [cart, setCart] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const missingSupabaseConfig = !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY;
 
   // Check if user is logged in on mount
   useEffect(() => {
@@ -58,6 +59,17 @@ export default function App() {
   };
 
   const total = useMemo(() => cart.reduce((sum, item) => sum + item.price, 0), [cart]);
+
+  if (missingSupabaseConfig) {
+    return (
+      <div className="app-shell">
+        <div className="auth-card">
+          <h1>Configuration required</h1>
+          <p>Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your deployment environment.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return <Auth onAuthChange={() => {}} />;
