@@ -186,15 +186,22 @@ app.post('/posts', requireLogin, async (req, res) => {
   }
 });
 
-initializeDatabase()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Blog app listening on http://localhost:${PORT}`);
+function startServer(port = PORT) {
+  return initializeDatabase()
+    .then(() => {
+      return app.listen(port, () => {
+        console.log(`Blog app listening on http://localhost:${port}`);
+      });
+    })
+    .catch((error) => {
+      console.error('Failed to initialize database', error);
+      process.exit(1);
     });
-  })
-  .catch((error) => {
-    console.error('Failed to initialize database', error);
-    process.exit(1);
-  });
+}
+
+if (require.main === module) {
+  startServer(PORT);
+}
 
 module.exports = app;
+module.exports.startServer = startServer;

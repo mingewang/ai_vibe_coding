@@ -5,4 +5,6 @@ I'd like to have a blog system using sqlite as db, please have a simple register
 
 Let according to these documnt, implement the MVP under web/withsqlite dir.
 
-add README.md, so people know how to get started: for example npm install, npm start? why it si not npm dev start?
+add README.md, so people know how to get started: for example npm install, npm start? 
+
+please add test utility as well to make sure it will not regerss in the future

@@ -2,7 +2,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('path');
 
-process.env.SQLITE_DB_PATH = path.join(__dirname, '..', 'test-blog.db');
+const testDbPath = path.join(__dirname, '..', `test-app-${Date.now()}.db`);
+process.env.SQLITE_DB_PATH = testDbPath;
 
 const {
   initializeDatabase,
