@@ -4,6 +4,9 @@ Minimal blog application built with **Flask + SQLite**.
 
 Users can register, log in, and create posts. Only authenticated users can publish.
 
+<img width="1526" height="771" alt="image" src="https://github.com/user-attachments/assets/0fd4837b-643b-4713-b10a-c9599378700d" />
+
+
 ## Quick Start
 
 ```bash
