@@ -10,12 +10,12 @@
 import mongoose from "mongoose";
 
 // Get the connection string from environment variables
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.COMRITE_CLOUD_MONGO_URL;
 
 // Check if the URI exists — if not, show a helpful error
 if (!MONGODB_URI) {
   throw new Error(
-    "Please define the MONGODB_URI environment variable inside .env.local"
+    "Please define the COMRITE_CLOUD_MONGO_URL environment variable inside .env.local"
   );
 }
 
