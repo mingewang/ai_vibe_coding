@@ -189,8 +189,8 @@ app.post('/posts', requireLogin, async (req, res) => {
 function startServer(port = PORT) {
   return initializeDatabase()
     .then(() => {
-      return app.listen(port, () => {
-        console.log(`Blog app listening on http://localhost:${port}`);
+      return app.listen(port, '0.0.0.0', () => {
+        console.log(`Blog app listening on http://0.0.0.0:${port}`);
       });
     })
     .catch((error) => {
