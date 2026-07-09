@@ -1,0 +1,1 @@
+please generate a game for Tower Defense using python, the code should demo the pathfidning, OOP, colission enmey AI etc, that hard to achieve in a browser based game. you can put it under games/python/tower_defens, with proprosal.md, architecgure.md, design.md, let user review before implment. 
