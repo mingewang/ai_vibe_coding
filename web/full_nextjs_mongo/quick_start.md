@@ -62,7 +62,7 @@ Now edit `.env.local` and fill in your real values.
 ### Your `.env.local` should look like:
 
 ```bash
-MONGODB_URI=mongodb+srv://alice:abc123@cluster0.a1b2c.mongodb.net/ecommerce
+COMRITE_CLOUD_MONGO_URL=mongodb+srv://alice:abc123@cluster0.a1b2c.mongodb.net/ecommerce
 JWT_SECRET=your-super-secret-key-change-this-in-production
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
