@@ -1,0 +1,1 @@
+Write a Three.js casual 3D simulation game. Click to spawn cubes/spheres, gravity effect, simple physics, clean low-poly style, browser only.

@@ -1,0 +1,1 @@
+Generate complete Phaser 3 code for a simple 2D platformer game with player movement, jumping, gravity, platforms, collectible coins, and score counter. Use built‑in placeholder assets.
